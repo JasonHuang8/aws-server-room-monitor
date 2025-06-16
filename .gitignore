@@ -199,8 +199,12 @@ cython_debug/
 # Local environment variables
 .env
 
-# VS Code config (optional)
+# VS Code config
 .vscode/
 
 # Mac system file
 .DS_Store
+
+# Secrets and Configuration
+certs/
+config.json
