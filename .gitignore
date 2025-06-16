@@ -192,3 +192,15 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Local virtual environment
+.venv/
+
+# Local environment variables
+.env
+
+# VS Code config (optional)
+.vscode/
+
+# Mac system file
+.DS_Store
