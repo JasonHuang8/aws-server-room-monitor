@@ -2,6 +2,7 @@ import random
 import time
 from datetime import datetime, timezone
 import json
+import argparse
 
 
 def generate_payload(device_id="rack-01"):
@@ -16,13 +17,23 @@ def generate_payload(device_id="rack-01"):
     return payload
 
 
+def parse_args():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description="Sensor Simulator for Server Room Monitoring")
+    parser.add_argument("--device-id", type=str, default="rack-01", help="Device ID")
+    parser.add_argument("--min-interval", type=int, default=5, help="Minimum send interval (seconds)")
+    parser.add_argument("--max-interval", type=int, default=10, help="Maximum send interval (seconds)")
+    return parser.parse_args()
+
+
 def main():
     """Main function to simulate sensor data generation and print values."""
     try:
+        args = parse_args()
         while True:
-            payload = generate_payload()
+            payload = generate_payload(device_id=args.device_id)
             print(json.dumps(payload))  # Could be redirected to AWS MQTT later
-            time.sleep(5)  # Simulate 5-second intervals
+            time.sleep(random.randint(args.min_interval, args.max_interval))  # Simulate 5-second intervals
     except KeyboardInterrupt:
         print("\nSimulation stopped.")
 
