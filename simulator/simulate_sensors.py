@@ -1,8 +1,14 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import random
 import time
 from datetime import datetime, timezone
 import json
 import argparse
+import ssl
+import paho.mqtt.client as mqtt
+from utils.config_loader import load_env, load_config
 
 
 def generate_payload(device_id="rack-01"):
@@ -15,6 +21,20 @@ def generate_payload(device_id="rack-01"):
         "vibration": round(random.uniform(0.0, 1.0), 2)
     }
     return payload
+
+
+def create_mqtt_client(env_vars):
+    """Set up and return an MQTT client connected to AWS IoT."""
+    client = mqtt.Client(protocol=mqtt.MQTTv311)
+    client.tls_set(
+        ca_certs=env_vars["ca"],
+        certfile=env_vars["cert"],
+        keyfile=env_vars["key"],
+        tls_version=ssl.PROTOCOL_TLSv1_2
+    )
+    client.connect(env_vars["endpoint"], port=8883)
+    client.loop_start()
+    return client
 
 
 def parse_args():
@@ -30,11 +50,22 @@ def main():
     """Main function to simulate sensor data generation and print values."""
     try:
         args = parse_args()
+        env_vars = load_env()
+        mqtt_client = create_mqtt_client(env_vars)
+        topic = f"sensors/server-room/{args.device_id}"
+
         while True:
             payload = generate_payload(device_id=args.device_id)
-            print(json.dumps(payload))  # Could be redirected to AWS MQTT later
-            time.sleep(random.randint(args.min_interval, args.max_interval))  # Simulate 5-second intervals
+            payload_json = json.dumps(payload)
+            result = mqtt_client.publish(topic, payload_json)
+            if result.rc != mqtt.MQTT_ERR_SUCCESS:
+                print(f"Failed to publish message: {result.rc}")
+            print(f"Published to {topic}: {payload_json}")
+            time.sleep(random.randint(args.min_interval, args.max_interval))  # Simulate intervals based on user input
+
     except KeyboardInterrupt:
+        mqtt_client.loop_stop()
+        mqtt_client.disconnect()
         print("\nSimulation stopped.")
 
 
