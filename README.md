@@ -43,3 +43,6 @@ Add optional improvements like ML-based anomaly detection, EC2 deployment, metri
 ---
 
 I'll be iterating on this project in the open — if you're interested in seeing how I approach designing, structuring, and deploying cloud-first systems, feel free to follow along!
+
+Notes during development:
+To test MQTT client, subsribe to sensors/server-room/#.

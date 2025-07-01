@@ -15,7 +15,7 @@ def generate_payload(device_id="rack-01"):
     """Generate a random payload for the sensor."""
     payload = {
         "device_id": device_id,
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z").replace(":", "-"),
         "temperature": round(random.uniform(65, 100), 2),
         "humidity": round(random.uniform(30, 80), 2),
         "vibration": round(random.uniform(0.0, 1.0), 2)
