@@ -11,16 +11,30 @@ import paho.mqtt.client as mqtt
 from utils.config_loader import load_env, load_config
 
 
+# def generate_payload(device_id="rack-01"):
+#     """Generate a random payload for the sensor."""
+#     payload = {
+#         "device_id": device_id,
+#         "timestamp": (
+#             datetime.now(timezone.utc)
+#             .isoformat()
+#             .replace("+00:00", "Z")
+#             .replace(":", "-")
+#         ),
+#         "temperature": round(random.uniform(65, 100), 2),
+#         "humidity": round(random.uniform(30, 80), 2),
+#         "vibration": round(random.uniform(0.0, 1.0), 2)
+#     }
+#     return payload
+
 def generate_payload(device_id="rack-01"):
-    """Generate a random payload for the sensor."""
-    payload = {
+    return {
         "device_id": device_id,
         "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z").replace(":", "-"),
-        "temperature": round(random.uniform(65, 100), 2),
-        "humidity": round(random.uniform(30, 80), 2),
-        "vibration": round(random.uniform(0.0, 1.0), 2)
+        "temperature": 100,
+        "humidity": 60.0,
+        "vibration": 10
     }
-    return payload
 
 
 def create_mqtt_client(env_vars):
@@ -39,10 +53,15 @@ def create_mqtt_client(env_vars):
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Sensor Simulator for Server Room Monitoring")
-    parser.add_argument("--device-id", type=str, default="rack-01", help="Device ID")
-    parser.add_argument("--min-interval", type=int, default=5, help="Minimum send interval (seconds)")
-    parser.add_argument("--max-interval", type=int, default=10, help="Maximum send interval (seconds)")
+    parser = argparse.ArgumentParser(
+        description="Sensor Simulator for Server Room Monitoring"
+        )
+    parser.add_argument("--device-id", type=str,
+                        default="rack-01", help="Device ID")
+    parser.add_argument("--min-interval", type=int,
+                        default=5, help="Minimum send interval (seconds)")
+    parser.add_argument("--max-interval", type=int,
+                        default=10, help="Maximum send interval (seconds)")
     return parser.parse_args()
 
 
@@ -61,7 +80,10 @@ def main():
             if result.rc != mqtt.MQTT_ERR_SUCCESS:
                 print(f"Failed to publish message: {result.rc}")
             print(f"Published to {topic}: {payload_json}")
-            time.sleep(random.randint(args.min_interval, args.max_interval))  # Simulate intervals based on user input
+
+            # Simulate intervals based on user input
+            time.sleep(random.randint(args.min_interval,
+                                      args.max_interval))
 
     except KeyboardInterrupt:
         mqtt_client.loop_stop()
