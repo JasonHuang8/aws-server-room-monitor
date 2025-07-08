@@ -11,30 +11,21 @@ import paho.mqtt.client as mqtt
 from utils.config_loader import load_env, load_config
 
 
-# def generate_payload(device_id="rack-01"):
-#     """Generate a random payload for the sensor."""
-#     payload = {
-#         "device_id": device_id,
-#         "timestamp": (
-#             datetime.now(timezone.utc)
-#             .isoformat()
-#             .replace("+00:00", "Z")
-#             .replace(":", "-")
-#         ),
-#         "temperature": round(random.uniform(65, 100), 2),
-#         "humidity": round(random.uniform(30, 80), 2),
-#         "vibration": round(random.uniform(0.0, 1.0), 2)
-#     }
-#     return payload
-
 def generate_payload(device_id="rack-01"):
-    return {
+    """Generate a random payload for the sensor."""
+    payload = {
         "device_id": device_id,
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z").replace(":", "-"),
-        "temperature": 100,
-        "humidity": 60.0,
-        "vibration": 10
+        "timestamp": (
+            datetime.now(timezone.utc)
+            .isoformat()
+            .replace("+00:00", "Z")
+            .replace(":", "-")
+        ),
+        "temperature": round(random.uniform(65, 100), 2),
+        "humidity": round(random.uniform(30, 80), 2),
+        "vibration": round(random.uniform(0.0, 1.0), 2)
     }
+    return payload
 
 
 def create_mqtt_client(env_vars):
