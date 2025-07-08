@@ -15,6 +15,7 @@ if not logger.hasHandlers():
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from datetime import datetime, timezone
 from utils.config_loader import load_config
+from dateutil.parser import parse as parse_datetime
 
 
 # Initialize the S3 client
@@ -30,7 +31,7 @@ def lambda_handler(event, context):
         bucket_name = config.get("s3_bucket", "sensor-data-bucket")
 
         # Validate required fields
-        required_fields = ["device_id", "temperature", "humidity", "vibration"]
+        required_fields = ["device_id", "temperature", "humidity", "vibration", "timestamp"]
         missing = [f for f in required_fields if f not in event]
         if missing:
             logger.error(f"Missing required fields: {missing}")
@@ -68,6 +69,19 @@ def lambda_handler(event, context):
                 })
             }
 
+        try:
+            timestamp_raw = event.get("timestamp")
+            timestamp = (
+                parse_datetime(timestamp_raw)
+                .astimezone(timezone.utc)
+                .isoformat()
+                .replace("+00:00", "Z")
+                .replace(":", "-")
+            )
+        except Exception:
+            logger.warning("Invalid timestamp format, using current UTC time.")
+            timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z").replace(":", "-")
+
         if not (0 <= humidity <= 100 and 0 <= temperature <= 200
                 and 0 <= vibration <= 5):
             logger.warning(
@@ -77,12 +91,6 @@ def lambda_handler(event, context):
                     "humidity": humidity,
                     "vibration": vibration
                 }
-            )
-            timestamp = (
-                datetime.now(timezone.utc)
-                .isoformat()
-                .replace("+00:00", "Z")
-                .replace(":", "-")
             )
             store_payload_to_s3(bucket_name, "invalid/", event,
                                 timestamp, device_id)
@@ -94,7 +102,6 @@ def lambda_handler(event, context):
                 })
             }
 
-        timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z").replace(":", "-")
 
         # Determine if the data is anomalous
         TEMP_THRESHOLD_F = 85   # Above this, cooling may be needed
