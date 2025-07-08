@@ -36,4 +36,4 @@ if __name__ == "__main__":
     for test_file in test_files:
         run_test(test_file)
 
-    print("\n=== All tests completed ===")
+    print("\n=== All tests completed ===\n")
