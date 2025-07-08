@@ -19,7 +19,6 @@ def generate_payload(device_id="rack-01"):
             datetime.now(timezone.utc)
             .isoformat()
             .replace("+00:00", "Z")
-            .replace(":", "-")
         ),
         "temperature": round(random.uniform(65, 100), 2),
         "humidity": round(random.uniform(30, 80), 2),
