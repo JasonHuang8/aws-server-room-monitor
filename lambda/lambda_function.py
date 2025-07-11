@@ -20,11 +20,19 @@ from dateutil.parser import parse as parse_datetime
 
 # Initialize the S3 client
 s3 = boto3.client('s3')
+cloudwatch = boto3.client("cloudwatch")
+
+# Constants for thresholds
+TEMP_THRESHOLD_F = 85   # Above this, cooling may be needed
+HUMIDITY_LOW = 20       # Below this, risk of static
+HUMIDITY_HIGH = 60      # Above this, risk of condensation
+VIBRATION_THRESHOLD = 0.5  # Above this, potential mechanical issue
 
 
 def lambda_handler(event, context):
     """AWS Lambda function to process sensor data from IoT devices."""
     try:
+        emit_metric("LambdaExecutions", 1)
         # Load configuration and get bucket
         config = load_config()
         logger.debug(f"Loaded config: {config}")
@@ -102,13 +110,7 @@ def lambda_handler(event, context):
                 })
             }
 
-
         # Determine if the data is anomalous
-        TEMP_THRESHOLD_F = 85   # Above this, cooling may be needed
-        HUMIDITY_LOW = 20       # Below this, risk of static
-        HUMIDITY_HIGH = 60      # Above this, risk of condensation
-        VIBRATION_THRESHOLD = 0.5  # Above this, potential mechanical issue
-
         note = []
 
         if temperature > TEMP_THRESHOLD_F:
@@ -141,6 +143,7 @@ def lambda_handler(event, context):
         # Check if the data is anomalous. If so, store in alerts bucket
         # and send SNS notification.
         if is_anomaly:
+            emit_metric("AnomaliesDetected", 1, device_id)
             store_payload_to_s3(bucket_name, "alerts/", payload,
                                 timestamp, device_id)
 
@@ -204,3 +207,22 @@ def store_payload_to_s3(bucket, prefix, payload, timestamp, device_id):
         )
     except Exception as e:
         logger.error(f"Failed to store payload in {key}: {e}")
+
+
+# Utility function to emit custom CloudWatch metrics
+# for monitoring Lambda execution and anomalies.
+def emit_metric(name, value, device_id, unit="Count"):
+    try:
+        cloudwatch.put_metric_data(
+            Namespace="ServerRoomMonitor",
+            MetricData=[{
+                "MetricName": name,
+                "Value": value,
+                "Unit": unit,
+                "Dimensions": [{"Name": "DeviceId",
+                                "Value": device_id}]
+            }]
+        )
+        logger.info(f"Custom CloudWatch metric emitted: {name} = {value}")
+    except Exception as e:
+        logger.warning(f"Failed to emit CloudWatch metric {name}: {e}")
