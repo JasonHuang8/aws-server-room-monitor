@@ -46,3 +46,5 @@ I'll be iterating on this project in the open — if you're interested in seeing
 
 Notes during development:
 To test MQTT client, subsribe to sensors/server-room/#.
+
+As part of this simulation work, I am also considering potential scaling and architecture implications. While the initial implementation will use lightweight threading for parallel rack simulation, I am mindful of potential Lambda execution bottlenecks. If needed, I may explore buffering strategies like Amazon SQS or EventBridge, keeping cost (free-tier usage) and speed. CloudWatch metrics and throttling behavior will guide this decision. Though outside of my budget, Amazon Kinesis would be the next step up for increasing throughput.
