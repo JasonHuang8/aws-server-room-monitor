@@ -23,13 +23,33 @@ def run_test(file_name):
         response = lambda_handler(event, context={})
         print("Lambda response:")
         print(json.dumps(response, indent=2))
+
+        # Parse the stringified JSON in 'body'
+        body = json.loads(response.get("body", "{}"))
+
+        if body.get("alert", False):
+            print("🚨 Anomaly Detected:", body.get("note", "Anomaly detected"))
+        elif body.get("error", False):
+            print("❌ Error:", body.get("error", "Unknown error"))
+        else:
+            print("✅ Normal payload processed")
+
     except Exception as e:
-        print("Error:", str(e))
+        print("❌ Error during test:", str(e))
 
 
 if __name__ == "__main__":
+    # Test with a valid payload that should process normally
+    # Test with high temperature anomaly
+    # Test with high vibration anomaly
+    # Test with multiple anomalies in one payload
+    # Test with edge case payloads to check robustness
+    # Test with malformed payloads to ensure error handling
     test_files = [
         "valid_payload.json",
+        "high_temp.json",
+        "high_vibration.json",
+        "multi_anomaly.json",
         "edge_case_payload.json",
         "malformed_payload.json"
     ]
@@ -37,3 +57,4 @@ if __name__ == "__main__":
         run_test(test_file)
 
     print("\n=== All tests completed ===\n")
+    

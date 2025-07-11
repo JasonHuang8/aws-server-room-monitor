@@ -12,8 +12,8 @@ This document outlines the test matrix for validating the end-to-end functionali
 | 2. High Temp Alert   | `temperature = 95.0°F`                                           | Flag as anomaly, log                             | ✅ `alerts/`      | ✅ Yes          |                            |
 | 3. High Vibration    | `vibration = 0.75`                                               | Flag as anomaly, log                             | ✅ `alerts/`      | ✅ Yes          |                            |
 | 4. Multiple Anomalies| `temperature = 95.0°F`, `vibration = 0.8`                        | Flag both issues, log                            | ✅ `alerts/`      | ✅ Yes          | Message includes both reasons |
-| 5. Edge Case         | `temperature = 90.0`, `vibration = 0.7` (on-threshold)           | Treated as normal (not anomaly)                  | ✅ `raw/` only    | ❌ No alert     | Thresholds are strict >/>   |
-| 6. Malformed Payload | `temperature = "high"`, `vibration = null`, missing humidity     | Log as invalid, skip processing                  | ✅ `invalid/`     | ❌ No alert     | Caught by validation logic |
+| 5. Edge Case         | `temperature = 90.0`, `vibration = 0.7` (on-threshold)           | Treated as normal (not anomaly)                  | ✅ `raw/` only    | ❌ No alert     | Thresholds are strictly greater than (>), not ≥   |
+| 6. Malformed Payload | `temperature = "high"`, `vibration = null`, missing humidity     | Log as invalid, skip processing                  | ✅ `invalid/`     | ❌ No alert     | Validation fails, logged as error or written to `invalid/` |
 
 ---
 
