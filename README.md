@@ -17,6 +17,10 @@ The system ingests sensor data (temperature, humidity, vibration), processes it 
 - **AWS CloudWatch** – Metrics, logs, and observability (in progress)
 - *(Optional)*: EC2, AWS Greengrass, Athena, QuickSight
 
+## Architecture Diagram
+
+![Architecture](docs/architecture_diagram.png)
+
 ## Roadmap
 
 Phase 0 – Setup & Project Initialization
@@ -46,3 +50,13 @@ I'll be iterating on this project in the open — if you're interested in seeing
 
 Notes during development:
 To test MQTT client, subsribe to sensors/server-room/#.
+
+As part of this simulation work, I am also considering potential scaling and architecture implications. While the initial implementation will use lightweight threading for parallel rack simulation, I am mindful of potential Lambda execution bottlenecks. If needed, I may explore buffering strategies like Amazon SQS or EventBridge, keeping cost (free-tier usage) and speed. CloudWatch metrics and throttling behavior will guide this decision. Though outside of my budget, Amazon Kinesis would be the next step up for increasing throughput.
+
+Whenever changes are made to my local lambda/lambda_function, I run these commands to reflect the changes in my lambda_deploy folder.
+For Local Testing:
+`cp lambda/lambda_function.py lambda_deploy/lambda_function.py`
+
+For Full Deployment to Lambda:
+`rm lambda_payload.zip`
+`zip -r lambda_payload.zip . -x "*.DS_Store" "**/__pycache__/*"`

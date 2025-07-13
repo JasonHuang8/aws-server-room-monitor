@@ -20,6 +20,13 @@ from dateutil.parser import parse as parse_datetime
 
 # Initialize the S3 client
 s3 = boto3.client('s3')
+cloudwatch = boto3.client("cloudwatch")
+
+# Constants for thresholds
+TEMP_THRESHOLD_F = 85   # Above this, cooling may be needed
+HUMIDITY_LOW = 20       # Below this, risk of static
+HUMIDITY_HIGH = 60      # Above this, risk of condensation
+VIBRATION_THRESHOLD = 0.5  # Above this, potential mechanical issue
 
 
 def lambda_handler(event, context):
@@ -48,6 +55,7 @@ def lambda_handler(event, context):
             temperature = float(event.get("temperature", 0))
             humidity = float(event.get("humidity", 0))
             vibration = float(event.get("vibration", 0))
+            emit_metric("LambdaExecutions", 1, device_id)
 
         except (ValueError, TypeError):
             logger.error("Invalid data types in payload.")
@@ -102,25 +110,24 @@ def lambda_handler(event, context):
                 })
             }
 
-
         # Determine if the data is anomalous
-        TEMP_THRESHOLD_F = 85   # Above this, cooling may be needed
-        HUMIDITY_LOW = 20       # Below this, risk of static
-        HUMIDITY_HIGH = 60      # Above this, risk of condensation
-        VIBRATION_THRESHOLD = 0.5  # Above this, potential mechanical issue
-
         note = []
+        num_anomalies = 0
 
         if temperature > TEMP_THRESHOLD_F:
             note.append("High temperature")
+            num_anomalies += 1
         if humidity < HUMIDITY_LOW:
             note.append("Low humidity")
+            num_anomalies += 1
         elif humidity > HUMIDITY_HIGH:
             note.append("High humidity")
+            num_anomalies += 1
         if vibration > VIBRATION_THRESHOLD:
             note.append("Excessive vibration")
+            num_anomalies += 1
 
-        is_anomaly = len(note) > 0
+        is_anomaly = num_anomalies > 0
 
         payload = {
             "device_id": device_id,
@@ -129,7 +136,7 @@ def lambda_handler(event, context):
             "vibration": vibration,
             "timestamp": timestamp,
             "alert": is_anomaly,
-            "note": f"Anomalies: {', '.join(note)}" if note else "Normal"
+            "note": f"{num_anomalies} Anomalies Detected: {', '.join(note)}" if note else "Normal"
         }
 
         if device_id == "unknown":
@@ -141,6 +148,7 @@ def lambda_handler(event, context):
         # Check if the data is anomalous. If so, store in alerts bucket
         # and send SNS notification.
         if is_anomaly:
+            emit_metric("AnomaliesDetected", num_anomalies, device_id)
             store_payload_to_s3(bucket_name, "alerts/", payload,
                                 timestamp, device_id)
 
@@ -204,3 +212,22 @@ def store_payload_to_s3(bucket, prefix, payload, timestamp, device_id):
         )
     except Exception as e:
         logger.error(f"Failed to store payload in {key}: {e}")
+
+
+# Utility function to emit custom CloudWatch metrics
+# for monitoring Lambda execution and anomalies.
+def emit_metric(name, value, device_id, unit="Count"):
+    try:
+        cloudwatch.put_metric_data(
+            Namespace="ServerRoomMonitor",
+            MetricData=[{
+                "MetricName": name,
+                "Value": value,
+                "Unit": unit,
+                "Dimensions": [{"Name": "DeviceId",
+                                "Value": device_id}]
+            }]
+        )
+        logger.info(f"Custom CloudWatch metric emitted: {name} = {value}")
+    except Exception as e:
+        logger.warning(f"Failed to emit CloudWatch metric {name}: {e}")
