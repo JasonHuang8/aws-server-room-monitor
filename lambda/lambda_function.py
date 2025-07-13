@@ -32,7 +32,6 @@ VIBRATION_THRESHOLD = 0.5  # Above this, potential mechanical issue
 def lambda_handler(event, context):
     """AWS Lambda function to process sensor data from IoT devices."""
     try:
-        emit_metric("LambdaExecutions", 1)
         # Load configuration and get bucket
         config = load_config()
         logger.debug(f"Loaded config: {config}")
@@ -56,6 +55,7 @@ def lambda_handler(event, context):
             temperature = float(event.get("temperature", 0))
             humidity = float(event.get("humidity", 0))
             vibration = float(event.get("vibration", 0))
+            emit_metric("LambdaExecutions", 1, device_id)
 
         except (ValueError, TypeError):
             logger.error("Invalid data types in payload.")
@@ -112,17 +112,22 @@ def lambda_handler(event, context):
 
         # Determine if the data is anomalous
         note = []
+        num_anomalies = 0
 
         if temperature > TEMP_THRESHOLD_F:
             note.append("High temperature")
+            num_anomalies += 1
         if humidity < HUMIDITY_LOW:
             note.append("Low humidity")
+            num_anomalies += 1
         elif humidity > HUMIDITY_HIGH:
             note.append("High humidity")
+            num_anomalies += 1
         if vibration > VIBRATION_THRESHOLD:
             note.append("Excessive vibration")
+            num_anomalies += 1
 
-        is_anomaly = len(note) > 0
+        is_anomaly = num_anomalies > 0
 
         payload = {
             "device_id": device_id,
@@ -131,7 +136,7 @@ def lambda_handler(event, context):
             "vibration": vibration,
             "timestamp": timestamp,
             "alert": is_anomaly,
-            "note": f"Anomalies: {', '.join(note)}" if note else "Normal"
+            "note": f"{num_anomalies} Anomalies Detected: {', '.join(note)}" if note else "Normal"
         }
 
         if device_id == "unknown":
@@ -143,7 +148,7 @@ def lambda_handler(event, context):
         # Check if the data is anomalous. If so, store in alerts bucket
         # and send SNS notification.
         if is_anomaly:
-            emit_metric("AnomaliesDetected", 1, device_id)
+            emit_metric("AnomaliesDetected", num_anomalies, device_id)
             store_payload_to_s3(bucket_name, "alerts/", payload,
                                 timestamp, device_id)
 

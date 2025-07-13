@@ -1,48 +1,57 @@
-# System Test Plan – AWS Server Room Monitoring
+# ✅ Test Plan – Lambda Anomaly Detection System
 
-This document outlines the test matrix for validating the end-to-end functionality of the monitoring system: IoT → Lambda → S3/SNS.
-
----
-
-## ✅ Test Cases
-
-| Test Case           | Input Description                                               | Expected Lambda Action                          | S3 Storage      | SNS Alert Sent | Notes                       |
-|---------------------|------------------------------------------------------------------|--------------------------------------------------|------------------|----------------|-----------------------------|
-| 1. Normal Input      | All values within threshold                                      | Parse and log                                    | ✅ `raw/` only    | ❌ No alert     |                            |
-| 2. High Temp Alert   | `temperature = 95.0°F`                                           | Flag as anomaly, log                             | ✅ `alerts/`      | ✅ Yes          |                            |
-| 3. High Vibration    | `vibration = 0.75`                                               | Flag as anomaly, log                             | ✅ `alerts/`      | ✅ Yes          |                            |
-| 4. Multiple Anomalies| `temperature = 95.0°F`, `vibration = 0.8`                        | Flag both issues, log                            | ✅ `alerts/`      | ✅ Yes          | Message includes both reasons |
-| 5. Edge Case         | `temperature = 90.0`, `vibration = 0.7` (on-threshold)           | Treated as normal (not anomaly)                  | ✅ `raw/` only    | ❌ No alert     | Thresholds are strictly greater than (>), not ≥   |
-| 6. Malformed Payload | `temperature = "high"`, `vibration = null`, missing humidity     | Log as invalid, skip processing                  | ✅ `invalid/`     | ❌ No alert     | Validation fails, logged as error or written to `invalid/` |
+This document outlines the test cases and outcomes for the server room monitoring Lambda function.
 
 ---
 
-## 🔎 Sample Inputs Directory
+## 🧪 How to Run Tests
+For full Unit Testing:
+`python3 test/test_lambda_handler.py`
 
-Located in: `test_inputs/`
+To Start Full Simulation and Pipeline:
+`python3 simulator/simulate_sensors.py`
 
-| Filename                  | Description          |
-|---------------------------|----------------------|
-| `valid_payload.json`      | Normal sensor reading|
-| `high_temp.json`          | Triggers temp alert  |
-| `high_vibration.json`     | Triggers vibration alert |
-| `multi_anomaly.json`      | Triggers both alerts |
-| `edge_case_payload.json`  | Right at thresholds  |
-| `malformed_payload.json`  | Missing or bad fields|
+For One Rack — `device-id`, `min-interval`, `max-inteval`, `num-messages`
+For Multiple Racks — `num-racks`, `min-interval`, `max-inteval`, `num-messages`
 
 ---
 
-## ✅ Validation Checklist
+## 🔗 Log File
+To Generate Log:
+`python3 test/test_lambda_handler.py 2>&1 | tee test/test_output.log`
 
-- [ ] All test cases produce expected CloudWatch logs
-- [ ] Alerts received for anomalies
-- [ ] Files written to correct S3 bucket/prefix
-- [ ] Invalid data is not processed further
+See [test_output.log](test_output.log) for full execution output.
+
+---
+
+## ✅ Test Matrix
+
+| Test Case             | Description                                  | Expected Outcome                        | Actual Outcome                         |
+|----------------------|----------------------------------------------|-----------------------------------------|----------------------------------------|
+| [`valid_payload.json`](../test_inputs/valid_payload.json) | Normal payload, all fields valid             | Status 200, alert: false                | ✅ Passed                              |
+| [`high_temp.json`](../test_inputs/high_temp.json)     | Temp > 90°F                                  | Status 200, alert: true                 | ✅ Passed                              |
+| [`high_vibration.json`](../test_inputs/high_vibration.json)| Vibration > 0.7                              | Status 200, alert: true                 | ✅ Passed                              |
+| [`low_humidity.json`](../test_inputs/low_humidity.json)  | Humidity < 20%                               | Status 200, alert: true                 | ✅ Passed                              |
+| [`high_humidity.json`](../test_inputs/high_humidity.json) | Humidity > 70%                               | Status 200, alert: true                 | ✅ Passed                              |
+| [`multi_anomaly.json`](../test_inputs/multi_anomaly.json) | Temp + vibration both abnormal               | Status 200, alert: true                 | ✅ Passed                              |
+| [`edge_case_payload.json`](../test_inputs/edge_case_payload.json) | Values exactly at thresholds             | Status 200, alert: true (conservative threshold logic) | ✅ Passed |
+| [`edge_humidity.json`](../test_inputs/edge_humidity.json) | Humidity = 20% (right on lower threshold)    | Status 200, alert: false                | ✅ Passed                              |
+| [`malformed_payload.json`](../test_inputs/malformed_payload.json)| Invalid types (e.g., temp as string)      | Status 400, error: "Invalid data types" | ✅ Passed                              |
+| [`missing_input.json`](../test_inputs/missing_input.json) | Missing humidity/timestamp fields            | Status 400, error: "Missing fields"     | ✅ Passed                              |
 
 ---
 
 ## 📌 Notes
 
-- Thresholds used: `temperature > 90.0°F`, `vibration > 0.7`
-- Timestamps must follow ISO 8601 UTC format with `Z` suffix
-- `device_id` must be unique per simulated rack
+- CloudWatch metrics for `LambdaExecutions` and `AnomaliesDetected` were emitted successfully for each valid call.
+- SNS alert warnings were logged when `SNS_TOPIC_ARN` was unset (expected in local test).
+- Payloads were written to S3 under correct folder structure for anomalies and invalid data.
+
+- Example SNS alert screenshot:
+  ![SNS Alert Screenshot](../docs/sns_alert_sample.png)
+
+- Anomaly logs are stored under: `alerts/device_id/timestamp.json`  
+  Invalid payloads under: `invalid/device_id/timestamp.json`  
+  All valid payloads under: `raw/device_id/timestamp.json`
+
+- End-to-end validation also performed via AWS IoT MQTT test client to simulate production traffic.

@@ -17,6 +17,7 @@ def load_test_input(file_name):
 
 
 def run_test(file_name):
+    """Run a test case by loading the input JSON and invoking the Lambda handler."""
     print(f"\n=== Running test: {file_name} ===")
     try:
         event = load_test_input(file_name)
@@ -49,12 +50,17 @@ if __name__ == "__main__":
         "valid_payload.json",
         "high_temp.json",
         "high_vibration.json",
+        "low_humidity.json",
+        "high_humidity.json",
         "multi_anomaly.json",
         "edge_case_payload.json",
-        "malformed_payload.json"
+        "edge_humidity.json",
+        "malformed_payload.json",
+        "missing_input.json"
     ]
+    print("\n=== Starting Lambda Handler Tests ===\n")
+    # Run each test case
     for test_file in test_files:
         run_test(test_file)
 
     print("\n=== All tests completed ===\n")
-    

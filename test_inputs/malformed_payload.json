@@ -1,5 +1,7 @@
 {
-  "device_id": "rack-bad",
-  "temperature": "high",
-  "vibration": null
+  "device_id": "rack-03",
+  "temperature": "too hot",
+  "humidity": 45.2,
+  "vibration": 0.3,
+  "timestamp": "2025-07-08T05:13:21.622484Z"
 }
