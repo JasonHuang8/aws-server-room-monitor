@@ -1,6 +1,6 @@
 # Server Room Environmental Monitor
 
-**Summary**  
+## Summary 
 This project is a cloud-native, production-grade server room monitoring pipeline built entirely on AWS. It simulates real-time environmental telemetry—including temperature, humidity, and vibration—and streams the data to AWS IoT Core for ingestion. From there, a Lambda function processes the data and routes it to Amazon S3 or triggers alerts via Amazon SNS based on configurable anomaly detection thresholds.
 
 I designed and implemented this system to demonstrate my ability to build scalable, event-driven cloud architectures using Python and core AWS services. It highlights practical skills in serverless computing, IoT data ingestion, observability, and fault-tolerant design—capabilities that mirror those used in real-world edge monitoring and data center infrastructure. While similar in concept to enterprise solutions like AWS Kinesis, Apache Kafka, or Azure Event Hubs, this pipeline is built for minimal cost (fully free-tier compatible) and significantly lower operational complexity.
@@ -17,7 +17,7 @@ Throughout this project, I actively leveraged AI as a development assistant—us
 - **AWS Lambda** – Serverless compute to process and evaluate incoming data
 - **Amazon S3** – Durable object storage for logs and alerts
 - **Amazon SNS** – Push-based alerting mechanism (email/SMS)
-- **AWS CloudWatch** – Metrics, logs, and observability (in progress)
+- **AWS CloudWatch** – Metrics, logs, and observability
 - *(Optional)*: EC2, AWS Greengrass, Athena, QuickSight
 
 ## How it Works
@@ -58,7 +58,7 @@ Simulated sensor data from a Python script is streamed and ingested into AWS IoT
    CERT_PATH=certs/your-certificate.pem.crt
    KEY_PATH=certs/your-private.pem.key
    CA_PATH=certs/Amazon-root-CA.pem
-   AWS_REGION=us-west-2
+   AWS_REGION=your-region
    SNS_TOPIC_ARN=arn:aws:sns:your-region:account-id:your-topic
    ```
 
@@ -89,8 +89,6 @@ Simulated sensor data from a Python script is streamed and ingested into AWS IoT
      rm lambda_payload.zip
      zip -r lambda_payload.zip . -x "*.DS_Store" "**/__pycache__/*"
      ```
-
----
 
 ## Folder Structure
 
@@ -161,8 +159,6 @@ Write the final README, generate architecture visuals, and document how the syst
 
 Phase 6 – Extensions & Enhancements
 Add optional improvements like ML-based anomaly detection, EC2 deployment, metrics visualization, or CI/CD.
-
----
 
 I'll be iterating on this project in the open — if you're interested in seeing how I approach designing, structuring, and deploying cloud-first systems, feel free to follow along!
 
