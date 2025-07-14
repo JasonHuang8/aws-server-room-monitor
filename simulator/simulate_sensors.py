@@ -14,20 +14,30 @@ from concurrent.futures import ThreadPoolExecutor
 from utils.config_loader import load_env, load_config
 
 
-def generate_payload(device_id="rack-01"):
-    """Generate a random payload for the sensor."""
-    payload = {
+def generate_payload(device_id="rack-01", anomaly_rate=0.05):
+    """Generate a random payload for the sensor, optionally injecting anomalies."""
+    inject_anomaly = random.random() < anomaly_rate
+    # Use triangular skewing for realism
+    temperature = round(random.triangular(65.0, 72.0, 95.0), 2)
+    humidity = round(random.triangular(25.0, 45.0, 70.0), 2)
+    vibration = round(random.triangular(0.0, 0.15, 1.0), 2)
+
+    if inject_anomaly:
+        anomaly_type = random.choice(["temp", "humidity", "vibration"])
+        if anomaly_type == "temp":
+            temperature = round(random.uniform(90.0, 100.0), 2)
+        elif anomaly_type == "humidity":
+            humidity = round(random.choice([random.uniform(10.0, 18.0), random.uniform(65.0, 75.0)]), 2)
+        elif anomaly_type == "vibration":
+            vibration = round(random.uniform(0.6, 1.0), 2)
+
+    return {
         "device_id": device_id,
-        "timestamp": (
-            datetime.now(timezone.utc)
-            .isoformat()
-            .replace("+00:00", "Z")
-        ),
-        "temperature": round(random.uniform(65, 100), 2),
-        "humidity": round(random.uniform(30, 80), 2),
-        "vibration": round(random.uniform(0.0, 1.0), 2)
+        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "temperature": temperature,
+        "humidity": humidity,
+        "vibration": vibration
     }
-    return payload
 
 
 def create_mqtt_client(env_vars):
@@ -59,6 +69,8 @@ def parse_args():
                         default=10, help="Maximum send interval (seconds)")
     parser.add_argument("--num-messages", type=int,
                         help="Optional number of messages to send before stopping (per rack)")
+    parser.add_argument("--anomaly-rate", type=float, default=0.05,
+                        help="Probability [0–1] that a payload contains an anomaly")
 
     args = parser.parse_args()
 
@@ -78,15 +90,16 @@ def setup_signal_handlers(stop_event):
 
 
 def simulate_rack(device_id, env_vars, min_interval,
-                  max_interval, stop_event, num_messages=None):
+                  max_interval, stop_event, anomaly_rate=0.05, num_messages=None):
     mqtt_client = create_mqtt_client(env_vars)
     topic = f"sensors/server-room/{device_id}"
     message_count = 0
     try:
         while not stop_event.is_set():
-            if num_messages is not None and message_count >= num_messages:
+            reached_limit = (num_messages is not None and message_count >= num_messages)
+            if reached_limit:
                 break
-            payload = generate_payload(device_id=device_id)
+            payload = generate_payload(device_id=device_id, anomaly_rate=anomaly_rate)
             payload_json = json.dumps(payload)
             result = mqtt_client.publish(topic, payload_json)
             if result.rc != mqtt.MQTT_ERR_SUCCESS:
@@ -115,6 +128,7 @@ def main():
                 min_interval=args.min_interval,
                 max_interval=args.max_interval,
                 stop_event=stop_event,
+                anomaly_rate=args.anomaly_rate,
                 num_messages=args.num_messages
             )
         else:
@@ -128,6 +142,7 @@ def main():
                         args.min_interval,
                         args.max_interval,
                         stop_event,
+                        args.anomaly_rate,
                         args.num_messages
                     )
     except KeyboardInterrupt:

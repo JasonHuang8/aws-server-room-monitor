@@ -1,4 +1,8 @@
 # Server Room Environmental Monitor
+![Built with AWS](https://img.shields.io/badge/Built%20with-AWS-orange)
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Serverless](https://img.shields.io/badge/Architecture-Serverless-green)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## Summary 
 This project is a cloud-native, production-grade server room monitoring pipeline built entirely on AWS. It simulates real-time environmental telemetry—including temperature, humidity, and vibration—and streams the data to AWS IoT Core for ingestion. From there, a Lambda function processes the data and routes it to Amazon S3 or triggers alerts via Amazon SNS based on configurable anomaly detection thresholds.
@@ -9,7 +13,7 @@ I designed and implemented this system to demonstrate my ability to build scalab
 
 This project is part of my broader effort to deepen my expertise in cloud engineering, with a focus on AWS infrastructure. I’m simulating the type of telemetry workflows used in edge monitoring or data center health systems—critical in high-availability environments like AWS EC2 or enterprise server fleets.
 
-Throughout this project, I actively leveraged AI as a development assistant—using it to accelerate learning curves around new AWS services and Python libraries. AI helped streamline low-level tasks like generating test cases or debugging syntax, but I took ownership of the architectural design, direction, and integration across components. This project reflects not only technical execution but also my growing skill in using AI as a tool—understanding where it excels, and more importantly, where human-driven planning and decision-making are irreplaceable.
+Throughout this project, I actively leveraged AI as a development assistant—using it to accelerate learning curves around new AWS services and Python libraries. AI helped streamline low-level tasks like generating test cases or debugging syntax, but I took ownership of the architectural design, direction, and integration across components. This project reflects not only technical execution but also my growing skill in using AI as a tool. I got to further deepen my understanding of where it excels, and more importantly, where human-driven planning and decision-making are irreplaceable.
 
 ## Key AWS Services Used
 
@@ -79,6 +83,16 @@ Simulated sensor data from a Python script is streamed and ingested into AWS IoT
 
    To test MQTT client, subscribe to sensors/server-room/#.
 
+
+   #### CLI Flags for simulate_sensors.py
+
+   - `--num-racks` (int): Number of server racks to simulate in parallel. Default is 1.
+   - `--device-id` (str): Device ID for single-rack mode. Auto-generated in multi-rack mode.
+   - `--min-interval` (int): Minimum interval (in seconds) between messages. Default is 5.
+   - `--max-interval` (int): Maximum interval (in seconds) between messages. Default is 10.
+   - `--num-messages` (int): Optional cap on the number of messages to send per rack.
+   - `--anomaly-rate` (float): Probability [0–1] that a message includes an anomaly. Default is 0.05.
+
 6. **Deploy Lambda function**
    - Copy updated handler for local testing:
      ```bash
@@ -89,6 +103,12 @@ Simulated sensor data from a Python script is streamed and ingested into AWS IoT
      rm lambda_payload.zip
      zip -r lambda_payload.zip . -x "*.DS_Store" "**/__pycache__/*"
      ```
+
+✅ Tip: To clean up the S3 bucket after a test run, use:
+```bash
+python3 clean_s3_prefixes.py
+```
+This removes all uploaded payload logs under the configured S3 prefix.
 
 ## Folder Structure
 
@@ -159,8 +179,6 @@ Write the final README, generate architecture visuals, and document how the syst
 
 Phase 6 – Extensions & Enhancements
 Add optional improvements like ML-based anomaly detection, EC2 deployment, metrics visualization, or CI/CD.
-
-I'll be iterating on this project in the open — if you're interested in seeing how I approach designing, structuring, and deploying cloud-first systems, feel free to follow along!
 
 ## Extensions & Future Work
 
