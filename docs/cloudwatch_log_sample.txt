@@ -1,0 +1,8 @@
+INIT_START Runtime Version: python:3.12.v75	Runtime Version ARN: arn:aws:lambda:REDACTED_REGION::runtime:REDACTED_SESSION
+[INFO]	2025-07-14T00:40:01.719Z		Found credentials in environment variables.
+START RequestId: 753ae8b9-7d31-4291-851d-af4f8c489231 Version: $LATEST
+[WARNING]	2025-07-14T00:40:02.174Z	753ae8b9-7d31-4291-851d-af4f8c489231	Failed to emit CloudWatch metric LambdaExecutions: An error occurred (AccessDenied) when calling the PutMetricData operation: User: arn:aws:sts::************:assumed-role/REDACTED_ROLE/REDACTED_SESSION is not authorized to perform: cloudwatch:PutMetricData because no identity-based policy allows the cloudwatch:PutMetricData action
+[INFO]	2025-07-14T00:40:02.452Z	753ae8b9-7d31-4291-851d-af4f8c489231	S3 put_object success
+[INFO]	2025-07-14T00:40:02.452Z	753ae8b9-7d31-4291-851d-af4f8c489231	Payload processed and stored
+END RequestId: 753ae8b9-7d31-4291-851d-af4f8c489231
+REPORT RequestId: 753ae8b9-7d31-4291-851d-af4f8c489231	Duration: 544.36 ms	Billed Duration: 545 ms	Memory Size: 128 MB	Max Memory Used: 93 MB	Init Duration: 519.06 ms
