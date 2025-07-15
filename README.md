@@ -13,6 +13,8 @@ This project is a cloud-native, production-grade server room monitoring pipeline
 
 I designed and implemented this system to demonstrate my ability to build scalable, event-driven cloud architectures using Python and core AWS services. It highlights practical skills in serverless computing, IoT data ingestion, observability, and fault-tolerant design—capabilities that mirror those used in real-world edge monitoring and data center infrastructure. While similar in concept to enterprise solutions like AWS Kinesis, Apache Kafka, or Azure Event Hubs, this pipeline is built for minimal cost (fully free-tier compatible) and significantly lower operational complexity.
 
+It also uses multithreading to simulate multiple server racks concurrently, allowing for realistic parallel computation and data generation—mimicking the load of distributed IoT environments.
+
 ## Purpose
 
 This project is part of my broader effort to deepen my expertise in cloud engineering, with a focus on AWS infrastructure. I’m simulating the type of environmental telemetry workflows (temperature, humidity, vibration) used in edge monitoring or data center health systems—critical in high-availability environments like AWS EC2 or enterprise server fleets.
@@ -31,7 +33,7 @@ Throughout this project, I actively leveraged AI as a development assistant—us
 
 ## How it Works
 
-Simulated sensor data from a Python script is streamed and ingested into AWS IoT Core, processed serverlessly via Lambda, and stored in S3 or used to trigger real-time alerts via SNS. Logs and metrics are also sent to CloudWatch for further function analysis.
+Simulated sensor data from a Python script is streamed and ingested into AWS IoT Core, processed serverlessly via Lambda, and stored in S3 or used to trigger real-time alerts via SNS. Logs and metrics are also sent to CloudWatch for further function analysis. Python multithreading used to simulate multiple server racks concurrently.
 
 ## Architecture Diagram
 
