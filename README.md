@@ -22,6 +22,7 @@ Throughout this project, I actively leveraged AI as a development assistant—us
 - **Amazon S3** – Durable object storage for logs and alerts
 - **Amazon SNS** – Push-based alerting mechanism (email/SMS)
 - **AWS CloudWatch** – Metrics, logs, and observability
+- **AWS IAM** – Roles and policies built starting from least privilege to manage secure access between components (IoT → Lambda → S3/SNS)
 - *(Optional)*: EC2, AWS Greengrass, Athena, QuickSight
 
 ## How it Works
