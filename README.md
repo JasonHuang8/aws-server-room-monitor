@@ -3,15 +3,19 @@
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 ![Serverless](https://img.shields.io/badge/Architecture-Serverless-green)
 ![License](https://img.shields.io/badge/License-MIT-green)
+[![Project Board](https://img.shields.io/badge/Phase%206-Project%20Board-blue)](https://github.com/users/JasonHuang8/projects/1/views/1)
 
-## Summary 
+> ⚠️ This project is currently paused at a stable v1.0 milestone. It is fully featured, but planned additional features may be added in a future iteration (see Phase 6 Project Board).
+
+## Summary
+
 This project is a cloud-native, production-grade server room monitoring pipeline built entirely on AWS. It simulates real-time environmental telemetry—including temperature, humidity, and vibration—and streams the data to AWS IoT Core for ingestion. From there, a Lambda function processes the data and routes it to Amazon S3 or triggers alerts via Amazon SNS based on configurable anomaly detection thresholds.
 
 I designed and implemented this system to demonstrate my ability to build scalable, event-driven cloud architectures using Python and core AWS services. It highlights practical skills in serverless computing, IoT data ingestion, observability, and fault-tolerant design—capabilities that mirror those used in real-world edge monitoring and data center infrastructure. While similar in concept to enterprise solutions like AWS Kinesis, Apache Kafka, or Azure Event Hubs, this pipeline is built for minimal cost (fully free-tier compatible) and significantly lower operational complexity.
 
 ## Purpose
 
-This project is part of my broader effort to deepen my expertise in cloud engineering, with a focus on AWS infrastructure. I’m simulating the type of telemetry workflows used in edge monitoring or data center health systems—critical in high-availability environments like AWS EC2 or enterprise server fleets.
+This project is part of my broader effort to deepen my expertise in cloud engineering, with a focus on AWS infrastructure. I’m simulating the type of environmental telemetry workflows (temperature, humidity, vibration) used in edge monitoring or data center health systems—critical in high-availability environments like AWS EC2 or enterprise server fleets.
 
 Throughout this project, I actively leveraged AI as a development assistant—using it to accelerate learning curves around new AWS services and Python libraries. AI helped streamline low-level tasks like generating test cases or debugging syntax, but I took ownership of the architectural design, direction, and integration across components. This project reflects not only technical execution but also my growing skill in using AI as a tool. I got to further deepen my understanding of where it excels, and more importantly, where human-driven planning and decision-making are irreplaceable.
 
@@ -32,6 +36,8 @@ Simulated sensor data from a Python script is streamed and ingested into AWS IoT
 ## Architecture Diagram
 
 ![Architecture](docs/architecture_diagram.png)
+
+*System architecture overview: end-to-end data flow from simulator to AWS services.*
 
 ## Setup Instructions
 
@@ -110,6 +116,8 @@ Simulated sensor data from a Python script is streamed and ingested into AWS IoT
 python3 clean_s3_prefixes.py
 ```
 This removes all uploaded payload logs under the configured S3 prefix.
+
+💡 This project is designed to run entirely within the AWS Free Tier.
 
 ## Folder Structure
 
